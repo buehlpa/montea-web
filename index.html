@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Montea – Flächenplanung für die Endmontage</title>
+<meta name="description" content="Montea plant Montageflächen: welche Seriennummer wann auf welchem Montageplatz steht – und ob sie dort hinpasst. Demofassung auf Anfrage." />
+
+<!--
+  ============================================================================
+  VOR DEM ERSTEN VERÖFFENTLICHEN EINTRAGEN
+  ============================================================================
+  MAILADRESSE: dreimal `demo@montea.example` im Abschnitt „Demo beantragen" -
+  einmal im Knopf (mailto mit vorbereitetem Betreff und Rumpf), zweimal in der
+  Zeile darunter. Sonst ist nichts einzutragen: die Seite verweist auf kein
+  Paket und kein anderes Repo.
+
+  Es gibt hier bewusst KEINEN Download. Solange Montea kein
+  Herausgeberzertifikat trägt, warnt Windows bei jedem Start, und wer anonym
+  lädt, klickt weg, ohne dass jemand davon erfährt. Wer die Datei aus der Hand
+  bekommt - mit zwei Sätzen dazu -, kommt durch. Siehe docs/produkt.md,
+  Stufe 6, im privaten Repo.
+  ============================================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* Farben und Masse aus der Anwendung (frontend/src/styles/grund.css), damit
+   Seite und Programm nach demselben aussehen. */
+:root {
+  --grund: #f4f6f5;
+  --grund-tief: #eaedec;
+  --grund-hoch: #ffffff;
+  --linie: #e3e7e5;
+  --linie-kraeftig: #ccd3d0;
+  --schrift: #161b19;
+  --schrift-zweit: #545e5a;
+  --schrift-leise: #7e8884;
+  --warnung: #b07d09;
+  --warnung-grund: #fdf6e3;
+  --marke: #0082c0;
+  --marke-tief: #00436d;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --a1: 4px; --a2: 8px; --a3: 12px; --a4: 20px; --a5: 32px; --a6: 52px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund: #171b19;
+    --grund-tief: #121614;
+    --grund-hoch: #1f2422;
+    --linie: #2b3230;
+    --linie-kraeftig: #3d4643;
+    --schrift: #eef1ef;
+    --schrift-zweit: #b3bbb8;
+    --schrift-leise: #838d89;
+    --warnung: #e0b45a;
+    --warnung-grund: #2a2317;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--schrift);
+  background: var(--grund);
+  -webkit-font-smoothing: antialiased;
+}
+.bahn { max-width: 760px; margin: 0 auto; padding: 0 var(--a4); }
+
+/* ---------------------------------------------------------------- Kopf */
+header { padding: var(--a6) 0 var(--a5); }
+.marke { display: flex; align-items: center; gap: var(--a3); }
+.marke svg { width: 56px; height: 56px; flex: none; }
+.marke h1 { margin: 0; font-size: 2.4rem; font-weight: 600; letter-spacing: -0.02em; }
+.anriss {
+  margin: var(--a4) 0 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--schrift-zweit);
+  max-width: 34em;
+}
+
+/* ------------------------------------------------------------- Hinweise */
+.band {
+  border: 1px solid var(--linie-kraeftig);
+  border-left: 3px solid var(--warnung);
+  background: var(--warnung-grund);
+  border-radius: 3px;
+  padding: var(--a3) var(--a4);
+  margin: var(--a5) 0;
+}
+.band strong { color: var(--warnung); }
+.band p { margin: 0; }
+.band p + p { margin-top: var(--a2); }
+
+/* -------------------------------------------------------------- Abschnitt */
+section { padding: var(--a5) 0; border-top: 1px solid var(--linie); }
+h2 {
+  margin: 0 0 var(--a4);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--schrift-leise);
+}
+h3 { margin: var(--a4) 0 var(--a2); font-size: 1.05rem; font-weight: 600; }
+p { margin: 0 0 var(--a3); }
+p:last-child { margin-bottom: 0; }
+
+ul.punkte { margin: 0; padding: 0; list-style: none; }
+ul.punkte li {
+  padding: var(--a2) 0 var(--a2) var(--a4);
+  position: relative;
+  color: var(--schrift-zweit);
+}
+ul.punkte li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 15px;
+  width: 7px; height: 7px;
+  background: var(--marke);
+  border-radius: 1px;
+}
+ul.punkte b { color: var(--schrift); font-weight: 600; }
+
+/* --------------------------------------------------------- Demo-Abschnitt */
+.antrag {
+  border: 1px solid var(--linie-kraeftig);
+  border-radius: 4px;
+  background: var(--grund-hoch);
+  padding: var(--a5);
+  margin-top: var(--a4);
+}
+.knopf {
+  display: inline-block;
+  background: var(--marke);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: none;
+  padding: var(--a3) var(--a5);
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+.knopf:hover { background: var(--marke-tief); }
+.leise { font-size: 0.94rem; color: var(--schrift-zweit); }
+
+/* ------------------------------------------------------------- Schritte */
+ol.schritte { margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+ol.schritte li {
+  counter-increment: schritt;
+  position: relative;
+  padding: 0 0 var(--a4) var(--a5);
+  color: var(--schrift-zweit);
+}
+ol.schritte li:last-child { padding-bottom: 0; }
+ol.schritte li::before {
+  content: counter(schritt);
+  position: absolute;
+  left: 0; top: 1px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--marke);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+}
+ol.schritte b { color: var(--schrift); font-weight: 600; }
+kbd {
+  font-family: var(--sans);
+  font-size: 0.88em;
+  font-weight: 500;
+  background: var(--grund-tief);
+  border: 1px solid var(--linie-kraeftig);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  color: var(--schrift);
+}
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--grund-tief);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+dl.angaben {
+  margin: var(--a4) 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--a2) var(--a4);
+  font-size: 0.94rem;
+}
+dl.angaben dt { color: var(--schrift-leise); }
+dl.angaben dd { margin: 0; color: var(--schrift-zweit); }
+
+footer {
+  border-top: 1px solid var(--linie);
+  margin-top: var(--a5);
+  padding: var(--a5) 0 var(--a6);
+  font-size: 0.88rem;
+  color: var(--schrift-leise);
+}
+footer p { margin-bottom: var(--a2); }
+a { color: var(--marke); }
+</style>
+</head>
+<body>
+
+<div class="bahn">
+
+<header>
+  <div class="marke">
+    <!-- Dasselbe Zeichen wie in der Anwendung: eine Halle in Draufsicht, darin
+         das Raster und zwei belegte Flächen. Werte aus Marke.tsx. -->
+    <svg viewBox="0 0 100 100" role="img" aria-label="Montea">
+      <defs>
+        <clipPath id="halle">
+          <rect x="6" y="6" width="88" height="88" rx="12" ry="12" />
+        </clipPath>
+      </defs>
+      <g clip-path="url(#halle)">
+        <rect x="6" y="6" width="88" height="88" fill="#ffffff" />
+        <g stroke="#c3c2b7" stroke-width="2.5">
+          <line x1="35.333" y1="6" x2="35.333" y2="94" />
+          <line x1="64.667" y1="6" x2="64.667" y2="94" />
+          <line x1="6" y1="35.333" x2="94" y2="35.333" />
+          <line x1="6" y1="64.667" x2="94" y2="64.667" />
+        </g>
+        <rect x="35.333" y="6" width="58.667" height="29.333" fill="#0082c0" />
+        <rect x="6" y="35.333" width="29.333" height="58.667" fill="#0082c0" opacity="0.34" />
+      </g>
+      <rect x="6" y="6" width="88" height="88" rx="12" ry="12"
+            fill="none" stroke="#00436d" stroke-width="5.5" stroke-linejoin="miter" />
+    </svg>
+    <h1>Montea</h1>
+  </div>
+
+  <p class="anriss">
+    Flächenplanung für die Endmontage: welche Seriennummer wann auf welchem
+    Montageplatz steht – und ob sie dort überhaupt hinpasst.
+  </p>
+</header>
+
+<div class="band">
+  <p><strong>Entwicklungsfassung.</strong> Montea wird derzeit entwickelt und ist
+  noch nicht freigegeben. Wer sie jetzt ansieht, sieht sie früh – und kann
+  mitreden, solange sich Dinge noch leicht ändern lassen.</p>
+</div>
+
+<section>
+  <h2>Was Montea tut</h2>
+  <ul class="punkte">
+    <li><b>Zeitleiste und Hallenplan am selben Stichtag.</b> Sie ziehen den Tag
+    durch das Jahr und sehen die Halle sich füllen und leeren.</li>
+    <li><b>Die Regeln prüft der Dienst, nicht der Mensch.</b> Kapazität,
+    Zustandsfolge, Überdeckung, Tragkraft, Freigabe je Bauart – eine abgelehnte
+    Änderung nennt alle Gründe auf einmal.</li>
+    <li><b>Planen per Zug.</b> Eine offene Seriennummer aus dem Projektbaum auf
+    die Zeitleiste ziehen; ein ganzes Los plant der Losplaner auf einmal, mit
+    Vorschau vorher.</li>
+    <li><b>Mandanten, Rollen, Änderungsprotokoll.</b> Rechte einzeln zuteilbar,
+    jede Änderung nachvollziehbar.</li>
+    <li><b>Läuft ohne Internet.</b> Der Bestand ist eine Datei auf Ihrem Rechner
+    oder Netzlaufwerk. Keine Cloud, kein Konto, kein Aktivierungsserver.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Demo beantragen</h2>
+
+  <p>Es gibt hier bewusst keinen Knopf zum Herunterladen. Montea trägt noch kein
+  Herausgeberzertifikat, und Windows warnt deshalb bei jedem unsignierten
+  Programm. Wer die Datei anonym lädt, steht mit dieser Warnung allein da.
+  <b>Sie bekommen sie stattdessen von uns</b> – mit der Lizenz, einer kurzen
+  Anleitung und jemandem, den Sie fragen können.</p>
+
+  <div class="antrag">
+    <p style="margin-bottom: var(--a4)"><b>Sie schreiben uns eine Mail, wir
+    antworten mit dem Paket.</b> Meist am selben Tag.</p>
+
+    <p>
+      <a class="knopf" href="mailto:demo@montea.example?subject=Montea%20%E2%80%93%20Demo%20beantragen&amp;body=Guten%20Tag%0A%0Aich%20m%C3%B6chte%20Montea%20ansehen%20und%20beantrage%20eine%20Demofassung.%0A%0AName%3A%20%0ABetrieb%3A%20%0AWof%C3%BCr%20geplant%20werden%20soll%3A%20%0A%0AFreundliche%20Gr%C3%BCsse%0A">Demo beantragen</a>
+    </p>
+
+    <p class="leise" style="margin-top: var(--a4)">
+      Oder formlos an <a href="mailto:demo@montea.example">demo@montea.example</a>.
+      Nennen Sie uns Ihren Namen, den Betrieb und wofür geplant werden soll –
+      mehr brauchen wir nicht. Die Angaben verwenden wir ausschliesslich dafür,
+      Ihnen die Lizenz auszustellen.
+    </p>
+  </div>
+
+  <dl class="angaben">
+    <dt>Sie bekommen</dt><dd>den Installer, eine Lizenzdatei und eine Anleitung</dd>
+    <dt>Laufzeit</dt><dd>30 Tage, sonst vollständig – keine gesperrten Funktionen</dd>
+    <dt>Danach</dt><dd>wird nichts zugesperrt: Ihr Bestand bleibt lesbar, auswertbar und sicherbar, nur planen lässt sich nicht mehr</dd>
+    <dt>Beim Kauf</dt><dd>läuft alles weiter – es wird nur die Lizenzdatei ausgetauscht, nicht die Anwendung</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Was Sie danach erwartet</h2>
+
+  <p>Damit nichts überrascht – so läuft die Einrichtung, und das ist alles:</p>
+
+  <ol class="schritte">
+    <li>Den Installer starten. Windows meldet
+    <b>„Der Computer wurde durch Windows geschützt“</b>, weil das Paket noch
+    nicht signiert ist.</li>
+    <li>Auf <kbd>Weitere Informationen</kbd> klicken – der Link steht klein
+    über den Knöpfen und ist leicht zu übersehen – und dann auf
+    <kbd>Trotzdem ausführen</kbd>.</li>
+    <li>Der Installer läuft durch wie jeder andere: deutsch, benutzerweit,
+    <b>ohne Adminrechte</b>. Nachzuinstallieren ist nichts.</li>
+    <li>Beim ersten Start als <code>superuser</code> ohne Kennwort anmelden und
+    <b>sofort eines vergeben</b> unter <i>Verwaltung → Benutzer</i>.</li>
+    <li>Die Lizenzdatei aus unserer Mail unter <i>Verwaltung → Betrieb</i>
+    hinterlegen – Datei wählen oder die drei Zeilen einfügen.</li>
+  </ol>
+
+  <h3>Falls Montea nicht startet</h3>
+  <p>In Betrieben mit Endpoint-Schutz kommt es vor, dass der Datendienst
+  <code>montea-api.exe</code> im Ordner <code>resources\sidecar</code> in
+  Quarantäne wandert – unsignierte Programme werden dort streng behandelt. Dann
+  öffnet sich das Fenster, aber es kommen keine Daten. Ihre IT muss den
+  Installationsordner freigeben; wir liefern die Angaben, die sie dafür
+  braucht.</p>
+
+  <dl class="angaben">
+    <dt>System</dt><dd>Windows 10 oder 11, 64 Bit</dd>
+    <dt>Platz</dt><dd>rund 250 MB</dd>
+    <dt>Ihre Daten</dt><dd>bleiben auf Ihrem Rechner (<code>%APPDATA%\Montea</code>)</dd>
+    <dt>Ohne Installation</dt><dd>auf Wunsch als portable Fassung, die vom Stick läuft</dd>
+  </dl>
+</section>
+
+<footer>
+  <p><b>Montea</b> – Entwicklungsfassung, nicht freigegeben.</p>
+  <p>Montea ist proprietäre Software und wird lizenziert, nicht verkauft. Die
+  Endbenutzer-Lizenzvereinbarung liegt dem Paket bei. Enthaltene
+  Fremdkomponenten stehen unter ihren eigenen, quelloffenen Lizenzen; die
+  Übersicht liegt dem Paket als <code>DRITTLIZENZEN.md</code> bei.</p>
+</footer>
+
+</div>
+</body>
+</html>

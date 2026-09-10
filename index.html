@@ -15,8 +15,9 @@
   Zeile darunter. Sonst ist nichts einzutragen: die Seite verweist auf kein
   Paket und kein anderes Repo.
 
-  VERSION: die Nummer steht an zwei Stellen - im Versionsband unter dem Kopf
-  (`.ausgabe`) und in der Fusszeile. Bei jeder Auslieferung beide anfassen.
+  VERSION: die Nummer steht an drei Stellen - im Versionsband unter dem Kopf
+  (`.ausgabe`), im Betreff der Update-Mailadresse daneben und in der Fusszeile.
+  `./version-sync.sh` traegt alle drei ein; von Hand also alle drei anfassen.
   Die Updateadresse `support@montea.org` steht nur im Versionsband.
 
   Es gibt hier bewusst KEINEN Download. Solange Montea kein
@@ -117,6 +118,13 @@ header { padding: var(--a6) 0 var(--a5); }
   padding: var(--a3) var(--a4);
   margin: calc(-1 * var(--a4)) 0 var(--a5);
   font-size: 0.94rem;
+  color: var(--schrift-zweit);
+}
+.versionsband .ausgabe-titel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   color: var(--schrift-zweit);
 }
 .versionsband .ausgabe {
@@ -289,6 +297,7 @@ a { color: var(--marke); }
 </div>
 
 <div class="versionsband">
+  <span class="ausgabe-titel">Aktuellste Version</span>
   <span class="ausgabe">2.1.0</span>
   <p>Für Updates bitte an <a href="mailto:support@montea.org?subject=Montea%202.1.0%20%E2%80%93%20Update">support@montea.org</a> wenden</p>
 </div>

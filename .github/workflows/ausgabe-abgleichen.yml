@@ -1,0 +1,48 @@
+# Traegt die aktuelle Ausgabe von Montea-2 (privat) in index.html ein.
+#
+# Braucht das Secret MONTEA_TOKEN: ein Fine-grained PAT mit Lesezugriff
+# (Contents: Read-only) auf buehlpa/Montea-2. Der GITHUB_TOKEN dieses Laufs
+# kommt an das private Repo nicht heran.
+name: Ausgabe abgleichen
+
+on:
+  schedule:
+    - cron: "17 4 * * *"   # taeglich, 04:17 UTC
+  workflow_dispatch:        # von Hand im Reiter Actions
+  repository_dispatch:      # aus Montea-2 heraus beim Release
+    types: [montea-release]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ausgabe-abgleichen
+  cancel-in-progress: false
+
+jobs:
+  abgleichen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ausgabe holen und eintragen
+        env:
+          GH_TOKEN: ${{ secrets.MONTEA_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Secret MONTEA_TOKEN fehlt - siehe README, Abschnitt Ausgabe abgleichen."
+            exit 1
+          fi
+          ./version-sync.sh
+
+      - name: Committen, wenn sich etwas geaendert hat
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Seite ist aktuell - nichts zu committen."
+            exit 0
+          fi
+          ausgabe=$(sed -n 's/.*<span class="ausgabe">\([^<]*\)<\/span>.*/\1/p' index.html | head -1)
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Ausgabe $ausgabe"
+          git push

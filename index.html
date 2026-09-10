@@ -15,6 +15,10 @@
   Zeile darunter. Sonst ist nichts einzutragen: die Seite verweist auf kein
   Paket und kein anderes Repo.
 
+  VERSION: die Nummer steht an zwei Stellen - im Versionsband unter dem Kopf
+  (`.ausgabe`) und in der Fusszeile. Bei jeder Auslieferung beide anfassen.
+  Die Updateadresse `support@montea.org` steht nur im Versionsband.
+
   Es gibt hier bewusst KEINEN Download. Solange Montea kein
   Herausgeberzertifikat trägt, warnt Windows bei jedem Start, und wer anonym
   lädt, klickt weg, ohne dass jemand davon erfährt. Wer die Datei aus der Hand
@@ -99,6 +103,33 @@ header { padding: var(--a6) 0 var(--a5); }
 .band strong { color: var(--warnung); }
 .band p { margin: 0; }
 .band p + p { margin-top: var(--a2); }
+
+/* -------------------------------------------------------- Versionsband */
+.versionsband {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--a2) var(--a3);
+  border: 1px solid var(--linie-kraeftig);
+  border-left: 3px solid var(--marke);
+  background: var(--grund-hoch);
+  border-radius: 3px;
+  padding: var(--a3) var(--a4);
+  margin: calc(-1 * var(--a4)) 0 var(--a5);
+  font-size: 0.94rem;
+  color: var(--schrift-zweit);
+}
+.versionsband .ausgabe {
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  font-weight: 500;
+  background: var(--marke);
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.versionsband p { margin: 0; }
 
 /* -------------------------------------------------------------- Abschnitt */
 section { padding: var(--a5) 0; border-top: 1px solid var(--linie); }
@@ -257,6 +288,11 @@ a { color: var(--marke); }
   mitreden, solange sich Dinge noch leicht ändern lassen.</p>
 </div>
 
+<div class="versionsband">
+  <span class="ausgabe">2.1.0</span>
+  <p>Für Updates bitte an <a href="mailto:support@montea.org?subject=Montea%202.1.0%20%E2%80%93%20Update">support@montea.org</a> wenden</p>
+</div>
+
 <section>
   <h2>Was Montea tut</h2>
   <ul class="punkte">
@@ -345,7 +381,7 @@ a { color: var(--marke); }
 </section>
 
 <footer>
-  <p><b>Montea</b> – Entwicklungsfassung, nicht freigegeben.</p>
+  <p><b>Montea 2.1.0</b> – Entwicklungsfassung, nicht freigegeben.</p>
   <p>Montea ist proprietäre Software und wird lizenziert, nicht verkauft. Die
   Endbenutzer-Lizenzvereinbarung liegt dem Paket bei. Enthaltene
   Fremdkomponenten stehen unter ihren eigenen, quelloffenen Lizenzen; die
